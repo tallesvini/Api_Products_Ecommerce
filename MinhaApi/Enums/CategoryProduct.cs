@@ -10,5 +10,6 @@
         Daily = 5,
         Cold = 6,
         Warm = 7,
+        Shoes = 8, 
     }
 }
