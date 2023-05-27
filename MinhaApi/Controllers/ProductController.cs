@@ -24,7 +24,6 @@ namespace MinhaApi.Controllers
             return Ok(products);
         }
 
-        //GetProductById/{id} 
         [HttpGet("GetProductById/{id}")]
         public async Task<ActionResult<ProductModel>> GetProductById(int id)
         {
@@ -50,7 +49,6 @@ namespace MinhaApi.Controllers
             {
                 throw new Exception("Couldn't add the new product..."); 
             }
-
         }
 
         [HttpPut("UpdateProduct/{id}")]
