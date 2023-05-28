@@ -1,7 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MinhaApi.Models;
-using MinhaApi.Repository;
 using MinhaApi.Repository.Interfaces;
 
 namespace MinhaApi.Controllers
@@ -27,6 +25,12 @@ namespace MinhaApi.Controllers
         public async Task<ActionResult<AboutProductModel>> GetAboutProductById(int id)
         {
             AboutProductModel aboutProducts = await _iaboutProductRepository.GetAboutProductById(id);
+
+            if (aboutProducts == null) 
+            {
+                return NotFound();
+            }
+
             return Ok(aboutProducts);
         }
     }

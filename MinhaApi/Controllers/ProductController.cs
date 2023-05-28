@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MinhaApi.Models;
 using MinhaApi.Repository.Interfaces;
 
@@ -28,6 +27,12 @@ namespace MinhaApi.Controllers
         public async Task<ActionResult<ProductModel>> GetProductById(int id)
         {
             ProductModel products = await _productRepository.GetProductById(id);
+
+            if(products == null)
+            {
+                return NotFound();
+            }
+
             return Ok(products);
         }
 
@@ -47,7 +52,7 @@ namespace MinhaApi.Controllers
             }
             catch
             {
-                throw new Exception("Couldn't add the new product..."); 
+                return BadRequest(); 
             }
         }
 
