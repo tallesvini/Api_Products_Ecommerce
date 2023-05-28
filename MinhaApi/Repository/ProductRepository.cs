@@ -51,7 +51,6 @@ namespace MinhaApi.Repository
             return productById;
         }
 
-
         public async Task<bool> DeleteProduct(int id)
         {
             ProductModel productById = await GetProductById(id);
