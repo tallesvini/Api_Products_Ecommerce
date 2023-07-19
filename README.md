@@ -20,11 +20,10 @@ Certifique-se de ter o [.NET Core SDK](https://dotnet.microsoft.com/download) in
 
 3. Abra o arquivo `program.cs` e configure as informações de conexão com o banco de dados MySQL:
 
-   ```c#
-    builder.Services.AddDbContext<ProductDBContext>
-      (options => options.UseMySql(
-          "Server=_servidor_;initial catalog=_nameDB_;Uid=_id_",
-          Microsoft.EntityFrameworkCore.ServerVersion.Parse("_mysql_version_")));
+   ```json
+      "ConnectionStrings": {
+          "DefaultConnection": "Server=localhost;initial catalog=ProductsApi;Uid=root"
+      },
    ```
 
 4. Execute as migrações para criar as tabelas no banco de dados:
@@ -45,58 +44,65 @@ A API estará disponível em `http://localhost:5000`.
 
 - .NET Core SDK 3.1 ou superior.
 
+## Como Acessar os Endpoints
+
+1. Realize seu registro no endpoint:
+   
+#### POST /api/auth/user/register
+
+``` json
+{
+  "userName": "string",
+  "email": "string",
+  "password": "string",
+  "confirmPassword": "string"
+}
+```
+
+2. Realize o login no endpoint: 
+#### POST /api/auth/user/login
+``` json
+{
+  "userName": "string",
+  "email": "string",
+  "password": "string",
+  "confirmPassword": "string"
+}
+```
+3. O token irá ser gerado.
+4. Com o Swagger ativado, vá na parte superior "Authorize" e adicione:
+Bearer [Seu Token JWT]
+5. Endpoint serão liberados.
+
 ## Endpoints
 
-### AboutProduct
+## AboutProduct
 
-### GET /api/AboutProduct/GetAllAboutProducts
+### GET /api/AboutProduct/
 
 Retorna todos os produtos disponíveis no e-commerce.
 
 Exemplo de resposta:
 
 ```json
-[
-  {
+{
     "id": 1,
-    "productId": 1,
-    "addProduct": "2023-06-04T23:27:14.767Z",
-    "availableOnFactory": true,
+    "isAvailableOnFactory": true,
     "product": {
-      "id": 1,
-      "name": "string",
-      "description": "string",
-      "size": "string",
-      "color": "string",
-      "gender": 0,
-      "price": 0,
-      "category": 0,
-      "status": 0,
-      "amount": 0
+       "id": 0,
+       "name": "string",
+       "sku": "string",
+       "description": "string",
+       "size": "string",
+       "color": "string",
+       "gender": 0,
+       "price": 0,
+       "categoryId": 1
     }
-  },
-      {
-      "id": 2,
-      "productId": 2,
-      "addProduct": "2023-06-04T23:27:14.767Z",
-      "availableOnFactory": true,
-      "product": {
-        "id": 2,
-        "name": "string",
-        "description": "string",
-        "size": "string",
-        "color": "string",
-        "gender": 0,
-        "price": 0,
-        "category": 0,
-        "status": 0,
-        "amount": 0
-      }
-    }
-]
+}
 ```
 
-### GET /api/AboutProduct/GetAboutProductById/{id}
+### GET /api/AboutProduct/{id}
 
 Retorna um produto específico com base no ID fornecido.
 
@@ -105,50 +111,68 @@ Exemplo de resposta:
 ```json
 {
     "id": 1,
-    "productId": 1,
-    "addProduct": "2023-06-04T23:27:14.767Z",
-    "availableOnFactory": true,
+    "isAvailableOnFactory": true,
     "product": {
-      "id": 1,
-      "name": "string",
-      "description": "string",
-      "size": "string",
-      "color": "string",
-      "gender": 0,
-      "price": 0,
-      "category": 0,
-      "status": 0,
-      "amount": 0
+       "id": 0,
+       "name": "string",
+       "sku": "string",
+       "description": "string",
+       "size": "string",
+       "color": "string",
+       "gender": 0,
+       "price": 0,
+       "categoryId": 1
     }
 }
 ```
 
-### Product
+### GET /api/AboutProduct/product/{id}
 
-### GET /api/Product/GetAllProducts
+Retorna o log específico de um produto.
+
+Exemplo de resposta:
+
+```json
+{
+    "id": 1,
+    "isAvailableOnFactory": true,
+    "product": {
+       "id": 0,
+       "name": "string",
+       "sku": "string",
+       "description": "string",
+       "size": "string",
+       "color": "string",
+       "gender": 0,
+       "price": 0,
+       "categoryId": 1
+    }
+}
+```
+
+## Product
+
+### GET /api/Product
 
 Retorna todos os produtos.
 
 Exemplo de requisição:
 
 ```json
-[
-  {
+{
     "id": 1,
     "name": "string",
+    "sku": "string",
     "description": "string",
     "size": "string",
     "color": "string",
     "gender": 0,
     "price": 0,
-    "category": 0,
-    "status": 0,
-    "amount": 0
-  }
-]
+    "categoryId": 1
+}
 ```
 
-### GET /api/Product/GetProductById/{id}
+### GET /api/Product/{id}
 
 Retorna determinado produto através do ID fornecido.
 
@@ -156,20 +180,19 @@ Exemplo de requisição:
 
 ```json
 {
-  "id": 1,
-  "name": "string",
-  "description": "string",
-  "size": "string",
-  "color": "string",
-  "gender": 0,
-  "price": 0,
-  "category": 0,
-  "status": 0,
-  "amount": 0
+    "id": 1,
+    "name": "string",
+    "sku": "string",
+    "description": "string",
+    "size": "string",
+    "color": "string",
+    "gender": 0,
+    "price": 0,
+    "categoryId": 1
 }
 ```
 
-### POST /api/Product/AddProduct
+### POST /api/Product/
 
 Realiza a inclusão de um novo produto.
 
@@ -177,20 +200,19 @@ Exemplo de requisição:
 
 ```json
 {
-  "id": 1,
-  "name": "string",
-  "description": "string",
-  "size": "string",
-  "color": "string",
-  "gender": 0,
-  "price": 0,
-  "category": 0,
-  "status": 0,
-  "amount": 0
+    "id": 1,
+    "name": "string",
+    "sku": "string",
+    "description": "string",
+    "size": "string",
+    "color": "string",
+    "gender": 0,
+    "price": 0,
+    "categoryId": 1
 }
 ```
 
-### PUT /api/Product/UpdateProduct/{id}
+### PUT /api/Product/{id}
 
 Realiza a edição de um produto atravéz do ID fornecido.
 
@@ -198,23 +220,96 @@ Exemplo de requisição:
 
 ```json
 {
-  "id": 1,
-  "name": "string",
-  "description": "string",
-  "size": "string",
-  "color": "string",
-  "gender": 0,
-  "price": 0,
-  "category": 0,
-  "status": 0,
-  "amount": 0
+    "id": 1,
+    "name": "string",
+    "sku": "string",
+    "description": "string",
+    "size": "string",
+    "color": "string",
+    "gender": 0,
+    "price": 0,
+    "categoryId": 0
 }
 ```
 
-### DELETE /api/Product/DeleteProduct/{id}
+### DELETE /api/Product/{id}
 
 Remove um produto específico com base no ID fornecido.
 
+## Category
+
+### GET /api/Category
+
+Retorna todas as categorias.
+
+Exemplo de requisição:
+
+```json
+{
+    "id": 1,
+    "name": "string",
+    "description": "string",
+    "imageUrl": "string"
+}
+```
+
+### GET /api/Category/{id}
+
+Retorna determinada categoria através do ID fornecido.
+
+Exemplo de requisição:
+
+```json
+{
+    "id": 1,
+    "name": "string",
+    "description": "string",
+    "imageUrl": "string"
+}
+```
+
+### POST /api/Category
+
+Realiza a inclusão de uma nova categoria.
+
+Exemplo de requisição:
+
+```json
+{
+    "id": 1,
+    "name": "string",
+    "description": "string",
+    "imageUrl": "string"
+}
+```
+
+### PUT /api/Category/{id}
+
+Realiza a edição de uma categoria atravéz do ID fornecido.
+
+Exemplo de requisição:
+
+```json
+{
+    "id": 1,
+    "name": "string",
+    "description": "string",
+    "imageUrl": "string"
+}
+```
+
+### DELETE /api/Category/{id}
+
+Remove uma categoria específica com base no ID fornecido.
+
+## Política de CORS:
+
+#### Dado a configuração, somente URLs/URIs que são de mesma origem terão acesso aos endpoints de persistência.
+
+## Roles privilégios:
+
+#### Terão acesso aos endpoints de persistência os usuários com privilégios de administrados.
+#### Demais endpoints são liberados para usuários.
 
 ## Como Contribuir
 

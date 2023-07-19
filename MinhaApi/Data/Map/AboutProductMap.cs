@@ -10,8 +10,9 @@ namespace MinhaApi.Data.Map
         {
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Id).ValueGeneratedOnAdd();
-            builder.Property(x => x.AddProduct).IsRequired();
-            builder.Property(x => x.AvailableOnFactory).IsRequired().HasMaxLength(3);
+            builder.Property(x => x.DateAddProduct).IsRequired();
+            builder.Property(x => x.WhoAdded).IsRequired().HasMaxLength(128);
+            builder.Property(x => x.IsAvailableOnFactory).IsRequired().HasPrecision(1);
             builder.Property(x => x.ProductId);
 
             builder.HasOne(x => x.Product);
