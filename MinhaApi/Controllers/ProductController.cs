@@ -1,76 +1,142 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MinhaApi.Models;
-using MinhaApi.Repository.Interfaces;
+using Newtonsoft.Json;
+using ProductsAPI.DTOs;
+using ProductsAPI.Pagination;
+using ProductsAPI.Repository.Interfaces;
 
 namespace MinhaApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Produces("application/json")]
     public class ProductController : ControllerBase
     {
-        private readonly IProductRepository _productRepository;
-        private readonly IAboutProductRepository _aboutProductRepository;
-        public ProductController(IProductRepository productRepository, IAboutProductRepository aboutProductRepository) 
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+
+        public ProductController(IUnitOfWork unitOfWork, IMapper mapper) 
         {
-            _productRepository = productRepository;
-            _aboutProductRepository = aboutProductRepository;
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
-        [HttpGet("GetAllProducts")]
-        public async Task<ActionResult<List<ProductModel>>> GetAllProducts()
+        #region Pagination --
+        private void AddPaginationHeader(PagedList<ProductModel> products)
         {
-            List<ProductModel> products = await _productRepository.GetAllProducts();
-            return Ok(products);
-        }
-
-        [HttpGet("GetProductById/{id}")]
-        public async Task<ActionResult<ProductModel>> GetProductById(int id)
-        {
-            ProductModel products = await _productRepository.GetProductById(id);
-
-            if(products == null)
+            var metadata = new
             {
-                return NotFound();
-            }
+                products.TotalCount,
+                products.PageSize,
+                products.CurrentPage,
+                products.TotalPages,
+                products.HasNext,
+                products.HasPrevious
+            };
 
-            return Ok(products);
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
+        }
+        #endregion
+
+        [Authorize(Roles = "User")]
+        [HttpGet]
+        public async Task<ActionResult<List<ProductDTO>>> GetProductAsync([FromQuery] Parameters parameters)
+        {
+             var products = await _unitOfWork.ProductRepository.GetProducts(parameters);
+
+             if (!products.Any()) return NotFound();
+
+             AddPaginationHeader(products);
+
+             var productDto = _mapper.Map<List<ProductDTO>>(products);
+
+             return Ok(productDto);
         }
 
-        [HttpPost("AddProduct")]
-        public async Task<ActionResult<ProductModel>> AddProduct([FromBody] ProductModel product)
+        [Authorize(Roles = "User")]
+        [HttpGet("{id:int:min(1)}", Name = "GetProduct")]
+        public async Task<ActionResult<ProductDTO>> GetProductByIdAsync(int id)
+        {
+             ProductModel product = await _unitOfWork.ProductRepository.GetById(x => x.Id == id);
+
+             if(product == null) return NotFound();
+
+            var productDto = _mapper.Map<ProductDTO>(product);
+
+            return Ok(productDto);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<ActionResult<ProductDTO>> PostProductAsync(ProductDTO productDto)
         {     
             try
             {
-                ProductModel products = await _productRepository.AddProduct(product);
+                if(productDto == null) return BadRequest();
 
-                AboutProductModel aboutProductModel = new AboutProductModel();
-                aboutProductModel.ProductId = products.Id;
-                aboutProductModel.AvailableOnFactory = true;
-                AboutProductModel aboutProduct = await _aboutProductRepository.AddAboutProduct(aboutProductModel);
+                var product = _mapper.Map<ProductModel>(productDto);
 
-                return Ok(products);
+                _unitOfWork.ProductRepository.Add(product);
+                await _unitOfWork.Commit();
+
+                _unitOfWork.AboutProductRepository.Add(new AboutProductModel { ProductId = productDto.Id });
+                await _unitOfWork.Commit();
+
+                return new CreatedAtRouteResult("GetProduct", new { id = product.Id }, productDto);
             }
             catch
             {
-                return BadRequest(); 
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "There was an error processing your request.");
             }
         }
 
-        [HttpPut("UpdateProduct/{id}")]
-        public async Task<ActionResult<ProductModel>> UpdateProduct([FromBody] ProductModel product, int id)
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{id:int:min(1)}")]
+        public async Task<ActionResult<ProductDTO>> UpdateProductAsync(int id, ProductDTO productDto)
         {
-            product.Id = id;
-            ProductModel products = await _productRepository.UpdateProduct(product, id);
+            try
+            {
+                if(id != productDto.Id) return BadRequest();
 
-            return Ok(products);
+                var product = _mapper.Map<ProductModel>(productDto);
+
+                _unitOfWork.ProductRepository.Update(product);
+                await _unitOfWork.Commit();
+
+                return NoContent();
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "There was an error processing your request.");
+            }
         }
 
-        [HttpDelete("DeleteProduct/{id}")]
-        public async Task<ActionResult<ProductModel>> DeleteProduct(int id)
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{id:int:min(1)}")]
+        public async Task<ActionResult<ProductDTO>> DeleteProductAsync(int id)
         {
-            bool products = await _productRepository.DeleteProduct(id);
+            try
+            {
+                var product = await _unitOfWork.ProductRepository.GetById(x => x.Id == id);
 
-            return Ok(products);
+                if(product == null) return BadRequest();
+
+                _unitOfWork.ProductRepository.Delete(product);
+                await _unitOfWork.Commit();
+
+                var productDto = _mapper.Map<ProductModel>(product);
+
+                return Ok(productDto);
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "There was an error processing your request.");
+            }
         }
     }
 }

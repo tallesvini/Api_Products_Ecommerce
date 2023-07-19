@@ -1,13 +1,11 @@
 ﻿using MinhaApi.Models;
+using ProductsAPI.Pagination;
+using ProductsAPI.Repository.Interfaces;
 
 namespace MinhaApi.Repository.Interfaces
 {
-    public interface IProductRepository
+    public interface IProductRepository : IAbstractRepository<ProductModel>
     {
-        Task<List<ProductModel>> GetAllProducts();
-        Task<ProductModel> GetProductById(int id);
-        Task<ProductModel> AddProduct(ProductModel product);
-        Task<ProductModel> UpdateProduct(ProductModel product, int id);
-        Task<bool> DeleteProduct(int id);
+        Task<PagedList<ProductModel>> GetProducts(Parameters parameters);   
     }
 }
