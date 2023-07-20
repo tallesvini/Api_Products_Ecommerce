@@ -308,7 +308,7 @@ Remove uma categoria específica com base no ID fornecido.
 
 ## Roles privilégios:
 
-#### Terão acesso aos endpoints de persistência os usuários com privilégios de administrados.
+#### Terão acesso aos endpoints de persistência os usuários com privilégios de administradores.
 #### Demais endpoints são liberados para usuários.
 
 ## Como Contribuir
